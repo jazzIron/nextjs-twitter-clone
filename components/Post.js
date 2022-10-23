@@ -19,6 +19,7 @@ import { signIn, useSession } from "next-auth/react";
 import { db, storage } from "../firebase";
 import { useEffect, useState } from "react";
 import { deleteObject, ref } from "firebase/storage";
+import { info } from "autoprefixer";
 
 function Post({ post }) {
   const { data: session } = useSession();
@@ -55,7 +56,9 @@ function Post({ post }) {
   async function deletePost() {
     if (window.confirm("Are you sure you want to delete this post?")) {
       deleteDoc(doc(db, "posts", post.id));
-      deleteObject(ref(storage, `posts/${post.id}/image`));
+      if (post.data().image) {
+        deleteObject(ref(storage, `posts/${post.id}/image`));
+      }
     }
   }
 
@@ -92,11 +95,14 @@ function Post({ post }) {
         </p>
 
         {/* post image */}
-        <img
-          className="rounded-2xl mr-2"
-          src={post.data().image}
-          alt="post-img"
-        />
+
+        {post.data().image && (
+          <img
+            className="rounded-2xl mr-2"
+            src={post.data().image}
+            alt="post-img"
+          />
+        )}
 
         {/* icons */}
         <div className="flex justify-between text-gray-500 p-2">
