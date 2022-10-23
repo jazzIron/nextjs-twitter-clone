@@ -16,8 +16,9 @@ import {
 } from "firebase/firestore";
 import Moment from "react-moment";
 import { signIn, useSession } from "next-auth/react";
-import { db } from "../firebase";
+import { db, storage } from "../firebase";
 import { useEffect, useState } from "react";
+import { deleteObject, ref } from "firebase/storage";
 
 function Post({ post }) {
   const { data: session } = useSession();
@@ -48,6 +49,13 @@ function Post({ post }) {
       }
     } else {
       signIn();
+    }
+  }
+
+  async function deletePost() {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      deleteDoc(doc(db, "posts", post.id));
+      deleteObject(ref(storage, `posts/${post.id}/image`));
     }
   }
 
@@ -93,7 +101,12 @@ function Post({ post }) {
         {/* icons */}
         <div className="flex justify-between text-gray-500 p-2">
           <ChatBubbleLeftEllipsisIcon className="h-9 w-9 hoverEffect p-2 hover:text-sky-500 hover:bg-sky-100" />
-          <TrashIcon className="h-9 w-9 hoverEffect p-2 hover:text-red-600 hover:bg-red-100" />
+          {session?.user.uid === post?.data().id && (
+            <TrashIcon
+              onClick={deletePost}
+              className="h-9 w-9 hoverEffect p-2 hover:text-red-600 hover:bg-red-100"
+            />
+          )}
           <div className="flex items-center">
             {hasLiked ? (
               <HeartIconFilled
